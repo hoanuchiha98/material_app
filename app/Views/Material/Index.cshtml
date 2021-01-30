@@ -1,0 +1,216 @@
+﻿@using System.Collections.Generic
+@using DKAC.Models.EntityModel
+@model DKAC.Models.RequestModel.DonHangRequestModel
+@{
+    ViewBag.Title = "";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var count = 0;
+    var data = new List<DonHang>();
+    if (Model != null)
+    {
+        count = Model.pageSize * (Model.page - 1);
+        data = (List<DKAC.Models.EntityModel.DonHang>)Model.lstDonHang;
+    }
+}
+
+
+<head>
+    <title>Nhập liệu</title>
+    <style>
+        #btnSearch {
+            padding: 7px 15px 7px 15px;
+        }
+
+        .lbl {
+            padding: 0px;
+            width: auto;
+            margin-top: 8px;
+            padding-left: 15px;
+        }
+
+        table {
+            border: 2px solid #e8e4e4;
+        }
+
+        .paging {
+            padding: 0px 15px 0px 15px;
+            text-align: right;
+        }
+
+        ul {
+            margin: 0px !important;
+        }
+
+        .search-form {
+            font-size: small !important;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="table-wrapper">
+            <div class="table-title">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h2>Tìm kiếm thông tin</h2>
+                    </div>
+                </div>
+            </div>
+            <form action="@Url.Action("Index", "Material")" id="search-form" method="get">
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-md-2"></div>
+                    <label class="lbl">Từ khóa: </label>
+                    <div class="col-md-6" style="margin-bottom: 10px;">
+                        <input type="text" name="Keywords" placeholder="Nhập số LSX" class="form-control search-form" />
+                    </div>
+                    <div class="col-md-2">
+                        <button id="btnSearch" class="btn btn-sm btn-primary filter-submit" type="submit">
+                            <i class="fa fa-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="table-wrapper">
+            <div class="table-title">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h2>Quản lý phiếu nhập vật tư</h2>
+                    </div>
+                    <div class="col-sm-6">
+                        <a href="/Material/Edit/0" class="btn btn-success" style="padding: 10px 30px 10px 30px; border-radius: 5px"><i class="fa fa-plus"></i> Thêm mới</a>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th class="text-center">STT</th>
+                        <th class="text-center">Số LSX</th>
+                        <th class="text-center">Mã sản phẩm</th>
+                        <th class="text-center">Tên sản phẩm</th>
+                        <th class="text-center">Mã khách hàng</th>
+                        <th class="text-center">Tên khách hàng</th>
+                        <th class="text-center">Nhân viên KD</th>
+                        <th class="text-center">Ngày giao hàng</th>
+                        <th class="text-center" style="width: 120px;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in data)
+                    {
+                        count++;
+                        <tr>
+                            <td class="text-center">@count</td>
+                            <td class="text-center">@item.so_lenh_sx</td>
+                            <td class="text-center">@item.ma_san_pham</td>
+                            <td class="text-center">@item.ten_san_pham</td>
+                            <td class="text-center">@item.ma_khach_hang</td>
+                            <td class="text-center">@item.ten_khach_hang</td>
+                            <td class="text-center">@item.nv_kinh_doanh</td>
+                            <td class="text-center">@(item.ngay_giao_hang.HasValue ? item.ngay_giao_hang.Value.ToString("dd/MM/yyyy") : "")</td>
+                            <td class="text-center">
+                                <a href="/Material/Details/@item.id" class="details-link" style="margin-right:8px;color:#00adff" title="Xem chi tiết"><i class="fa fa-eye"></i></a>
+                                <a href="/Material/Edit/@item.id" class="details-link" style="margin-right:8px;color:cornflowerblue" title="Sửa"><i class="fa fa-pen"></i></a>
+                                <a onclick="Delete(@item.id)" class="details-link red" style="margin-right:8px;color:red;" title="Xóa"><i class="fa fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!--Paging-->
+            <div class="row paging">
+                <div class="col-md-3" style="text-align: left; margin-top: 8px; padding: 0px;">
+                    <label>Có tất cả @Model.totalRecord kết quả</label>
+                </div>
+                <div class="col-md-9" style="padding: 0px;">
+                    <ul class="pagination">
+                        @{
+                            int position;
+                            if (Model.page > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", "Material", new { page = Model.page-1, pageSize = Model.pageSize, KeySearch = Model.Keywords})" tabindex="-1"> << </a>
+                                </li>
+                            }
+
+                            for (position = 1; position <= Model.totalPage; position++)
+                            {
+
+                                if (position == Model.page)
+                                {
+                                    <li class="page-item active"><a class="page-link" href="@Url.Action("Index", "Material", new { page = position, pageSize = Model.pageSize, KeySearch = Model.Keywords })">@position</a></li>
+                                }
+
+                                else
+                                {
+                                    <li class="page-item"><a class="page-link" href="@Url.Action("Index", "Material", new { page = position, pageSize = Model.pageSize, KeySearch = Model.Keywords })">@position</a></li>
+                                }
+
+                            }
+                            if (Model.page > 0 && Model.page < Model.totalPage)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", "Material", new { page = Model.page+1, pageSize = Model.pageSize, KeySearch = Model.Keywords })" tabindex="-1"> >> </a>
+                                </li>
+                            }
+
+                            if (Model.totalPage == 0)
+                            {
+                                <li>
+                                    <div role="status" aria-live="polite">Không có dữ liệu hiển thị</div>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript">
+    function Delete(id) {
+        var data = {
+            id: id,
+        };
+        var title = "Bạn có đồng ý xóa dữ liệu này không?";
+        var url = '/Material/Delete/';
+        swal({
+            title: title,
+            icon: "warning",
+            buttons: {
+                ok: "Xác nhận",
+                cancel: "Hủy",
+            }
+        }).then((isConfirm) => {
+            if (isConfirm != 'ok') {
+
+            } else {
+                $.post(url, data,
+                    function (rs) {
+                        if (rs.status > 0) {
+                            swal({
+                                title: "Xóa thành công!",
+                                text: "Dữ liệu của bạn đã được cập nhật!",
+                                icon: "success",
+                            }).then(function (isConfirm) {
+                                window.location.href = '/Material';
+                            });
+                        }
+                        else {
+                            toastr.error(rs.message);
+                        }
+                    });
+            }
+        });
+    }
+</script>
+
