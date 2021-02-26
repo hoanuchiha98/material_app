@@ -1,0 +1,197 @@
+﻿@using System.Collections.Generic
+@using DKAC.Models.EntityModel
+@model DKAC.Models.InfoModel.DonHangInfo
+@{
+    ViewBag.Title = "";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<head>
+    <title>Thống kê</title>
+    <style>
+        #btnSearch {
+            padding: 7px 15px 7px 15px;
+        }
+
+        .lbl {
+            padding: 0px;
+            width: auto;
+            margin-top: 8px;
+            padding-left: 15px;
+        }
+
+        table {
+            border: 2px solid #e8e4e4;
+        }
+
+        .paging {
+            padding: 0px 15px 0px 15px;
+            text-align: right;
+        }
+
+        ul {
+            margin: 0px !important;
+        }
+
+        .search-form {
+            font-size: small !important;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="table-wrapper">
+            <div class="table-title">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h2>Tìm kiếm thông tin</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 20px;">
+                <div class="col-md-1"></div>
+                <div class="col-md-3" style="margin-bottom: 10px;">
+                    <label>Từ khóa: </label>
+                    <input class="form-control" id="lenh_sx" placeholder="Nhập lệnh sản xuất" oninput="SearchLSXAutoComplete(this)" />
+                    @*@Html.DropDownListFor(a => a.id, Model.lstSo_LSX, "---Chọn số LSX---", new
+                        {
+                            @class = "form-control",
+                            @data_placeholder = "---Chọn số LSX---",
+                            @id = "lenh_sx",
+                            @style = "width: 100%",
+                        })*@
+                    <div class="valid">
+                        <div class="textNoti" id="textvalid">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label>Thời gian giao từ ngày: </label>
+                    <input type="text" class="form-control" id="fromDate" placeholder="dd/MM/yyyy" />
+                </div>
+                <div class="col-md-3">
+                    <label>Thời gian giao đến ngày: </label>
+                    <input type="text" class="form-control" id="toDate" placeholder="dd/MM/yyyy" />
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 20px;">
+                <div class="col-md-5"></div>
+                <div class="col-md-2">
+                    <button id="btnSearch" class="btn btn-sm btn-primary filter-submit" type="submit">
+                        <i class="fa fa-search"></i> Xem thông tin
+                    </button>
+                </div>
+                <div class="col-md-5"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="table-wrapper">
+            <div class="table-title">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h2>Bảng số liệu</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="pull-right text-right buttonExcell" style="display:none;">
+                            <button id="btnExport" class="btn btn-success filter-submit" onclick="ExportExcel()" title="Xuất Excel">
+                                <i class="fa fa-file-excel-o"></i> Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12" id="previewExport">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<script src="~/assets/login/vendor/datepicker/moment.min.js"></script>
+<script src="~/Scripts/bootbox.min.js"></script>
+
+@section scripts{
+
+
+    <script type="text/javascript">
+
+        var me = $("#lenh_sx").val();
+        function LoadMeasurEquipment() {
+            var html = `<iframe id="iframe" src="EvaluateMeasurEquipAfterEvaluate/GetMeasurEquipAfterEvaluate?id=${me}&exportExcel=false" type="application/pdf"></iframe>`;
+            $("#previewExport").html(html);
+        }
+
+        function ExportExcel() {
+            window.location.href = 'EvaluateMeasurEquipAfterEvaluate/GetMeasurEquipAfterEvaluate?id=' + me + '&exportExcel=true';
+        }
+
+
+        function SearchLSXAutoComplete(element) {
+            var value = $(element).val();
+            $(element).autocomplete({
+                minLength: 1,
+                source: function (request, response) {
+                    $.ajax({
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        url: "/Report/SearchLSXAutoComplete",
+                        data: "{'keySearch':'" + value + "'}",
+                        success: function (rs) {
+                            response(rs);
+                        },
+                        error: function (result) {
+                            alert("No Match");
+                        }
+                    });
+                }
+            });
+        }
+
+
+        $(document).ready(function () {
+
+            //$('#lenh_sx').select2({
+            //    allowClear: true,
+            //    theme: "bootstrap",
+            //    cache: true,
+            //    ajax: {
+            //        url: '/Report/SearchLSX',
+            //        dataType: 'json',
+            //        delay: 250,
+            //        cache: true,
+            //        processResults: function (data) {
+            //            return {
+            //                results: data.map(o => {
+            //                    return { id: o.id, text: o.so_lenh_sx }
+            //                })
+            //            };
+            //        }
+            //    }
+            //});
+
+            $("#fromDate").datepicker({
+                dateFormat: 'dd/mm/yy'
+            }).datepicker();
+
+            $("#toDate").datepicker({
+                dateFormat: 'dd/mm/yy'
+            }).datepicker();
+
+        });
+    </script>
+}
